@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Disegna forme</title>
+</head>
+<body>
+    <canvas id="myCanvas" width="400" height="400"></canvas>
+
+    <script>// Ottieni il riferimento all'elemento canvas
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+
+    // Crea un cerchio
+    ctx.beginPath();
+    ctx.arc(100, 100, 50, 0, 2 * Math.PI);
+    ctx.fillStyle = "blue";
+    ctx.fill();
+    ctx.closePath();
+
+    // Crea un punto
+    ctx.beginPath();
+    ctx.arc(200, 100, 2, 0, 2 * Math.PI);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
+
+    // Crea una linea
+    ctx.beginPath();
+    ctx.moveTo(250, 150);
+    ctx.lineTo(350, 150);
+    ctx.strokeStyle = "green";
+    ctx.stroke();
+    ctx.closePath();
+
+    // Crea un quadrato
+    ctx.beginPath();
+    ctx.rect(50, 200, 100, 100);
+    ctx.fillStyle = "orange";
+    ctx.fill();
+    ctx.closePath();</script>
+</body>
+</html>
