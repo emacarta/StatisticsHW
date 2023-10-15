@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Variate Distribution</title>
+</head>
+<body>
+    <h1>Random Variate Distribution</h1>
+
+    <div>
+        <label for="sampleSize">Sample Size (N):</label>
+        <input type="number" id="sampleSize" value="1000">
+    </div>
+
+    <div>
+        <label for="intervalCount">Interval Count (k):</label>
+        <input type="number" id="intervalCount" value="10">
+    </div>
+
+    <button onclick="generateDistributionTable()">Generate Distribution Table</button>
+
+    <div id="distributionTable"></div>
+
+    <script>
+        function generateDistributionTable() {
+            const N = parseInt(document.getElementById("sampleSize").value);
+            const k = parseInt(document.getElementById("intervalCount").value);
+
+            const intervalCounts = generateUniformRandomVariates(N, k);
+            printDistributionTable(intervalCounts, k);
+        }
+
+        function generateUniformRandomVariates(N, k) {
+            // (Use the previous JavaScript code for generating variates here)
+        }
+
+        function printDistributionTable(intervalCounts, k) {
+            // (Use the previous JavaScript code for printing the table here)
+        }
+    </script>
+</body>
+</html>
