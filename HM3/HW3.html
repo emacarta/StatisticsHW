@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simulazione Punteggio di Sicurezza</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <style>
+    .chart-container {
+      width: 45%;
+      border: 1px solid black;
+      margin: 10px;
+      padding: 10px;
+      background-color: rgb(255, 255, 255);
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="chart-container">
+    <canvas id="securityChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="attackDistribution"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="penetrationMetrics"></canvas>
+  </div>
+
+  <script>
+    const M = 3;
+    const N = 10;
+    const p = 0.5;
+    const securityScores = [];
+    const attackDistribution = Array.from({ length: N }, () => 0);
+    const cumulativePenetrations = Array(N).fill(0);
+    const relativeFrequencies = Array(N).fill(0);
+    const normalizedRatios = Array(N).fill(0);
+
+    for (let i = 0; i < M; i++) {
+      const systemTrajectory = [];
+      let score = 0;
+      let penetrations = 0;
+
+      for (let j = 0; j < N; j++) {
+        const attackSuccess = Math.random() < p;
+
+        if (attackSuccess) {
+          score -= 1;
+          penetrations += 1;
+        } else {
+          score += 1;
+        }
+
+        systemTrajectory.push(score);
+        attackDistribution[j] += attackSuccess ? 1 : 0;
+        cumulativePenetrations[j] += penetrations;
+        relativeFrequencies[j] = cumulativePenetrations[j] / (j + 1);
+        normalizedRatios[j] = cumulativePenetrations[j] / Math.sqrt(j + 1);
+      }
+
+      securityScores.push(systemTrajectory);
+    }
+
+    // Graph creation
+    const ctx1 = document.getElementById('securityChart').getContext('2d');
+    const chart1 = new Chart(ctx1, {
+      type: 'line',
+      data: {
+        labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
+        datasets: securityScores.map((trajectory, i) => ({
+          label: `Systems ${i + 1}`,
+          data: trajectory,
+          borderColor: `rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255},1)`,
+          fill: false,
+        })),
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            beginAtZero: true,
+          },
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    const ctx2 = document.getElementById('attackDistribution').getContext('2d');
+    const chart2 = new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: Array.from({ length: N }, (_, i) => `Attacco ${i + 1}`),
+        datasets: [{
+          label: 'Attack Distribution',
+          data: attackDistribution,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        }],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            beginAtZero: true,
+          },
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    const ctx3 = document.getElementById('penetrationMetrics').getContext('2d');
+    const chart3 = new Chart(ctx3, {
+      type: 'line',
+      data: {
+        labels: Array.from({ length: N }, (_, i) => `Attacco ${i + 1}`),
+        datasets: [
+          {
+            label: 'Cumulated Penetrations (f)',
+            data: cumulativePenetrations,
+            borderColor: 'rgba(255, 0, 0, 1)',
+            fill: false,
+          },
+          {
+            label: 'Relative Frequencies (f/Number of Attacks)',
+            data: relativeFrequencies,
+            borderColor: 'rgba(0, 0, 255, 1)',
+            fill: false,
+          },
+          {
+            label: 'Normalized Ratios (f/√Number of Attacks)',
+            data: normalizedRatios,
+            borderColor: 'rgba(0, 255, 0, 1)',
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            beginAtZero: true,
+          },
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    // Abilita il trascinamento dei grafici con jQuery UI
+    $('.chart-container').draggable();
+  </script>
+</body>
+</html>
