@@ -1,0 +1,209 @@
+@page
+@model IndexModel
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Security Score Simulation</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <style>
+        .chart-container {
+            width: 45%;
+            border: 1px solid black;
+            margin: 10px;
+            padding: 10px;
+            background-color: rgb(255, 255, 255);
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <canvas id="securityChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="attackDistribution"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="cumulatedPenetrationsChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="relativeFrequenciesChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="normalizedRatiosChart"></canvas>
+    </div>
+
+    <script>
+        const M = 3;
+        const N = 10;
+        const p = 0.5;
+        const securityScores = [];
+        const attackDistribution = Array.from({ length: N }, () => 0);
+        const cumulativePenetrations = Array(N).fill(0);
+        const relativeFrequencies = Array(N).fill(0);
+        const normalizedRatios = Array(N).fill(0);
+
+        for (let i = 0; i < M; i++) {
+            const systemTrajectory = [];
+            let score = 0;
+            let penetrations = 0;
+
+            for (let j = 0; j < N; j++) {
+                const attackSuccess = Math.random() < p;
+
+                if (attackSuccess) {
+                    score -= 1;
+                    penetrations += 1;
+                } else {
+                    score += 1;
+                }
+
+                systemTrajectory.push(score);
+                attackDistribution[j] += attackSuccess ? 1 : 0;
+                cumulativePenetrations[j] += penetrations;
+                relativeFrequencies[j] = cumulativePenetrations[j] / (j + 1);
+                normalizedRatios[j] = cumulativePenetrations[j] / Math.sqrt(j + 1);
+            }
+
+            securityScores.push(systemTrajectory);
+        }
+
+        // Security Scores Chart
+        const ctx1 = document.getElementById('securityChart').getContext('2d');
+        const chart1 = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
+                datasets: securityScores.map((trajectory, i) => ({
+                    label: `Systems ${i + 1}`,
+                    data: trajectory,
+                    borderColor: `rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255},1)`,
+                    fill: false,
+                })),
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                    },
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+
+        // Attack Distribution Chart
+        const ctx2 = document.getElementById('attackDistribution').getContext('2d');
+        const chart2 = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
+                datasets: [{
+                    label: 'Attack Distribution',
+                    data: attackDistribution,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                }],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                    },
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+
+        // Cumulative Penetrations Chart (Histogram)
+        const ctx3 = document.getElementById('cumulatedPenetrationsChart').getContext('2d');
+        const chart3 = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
+                datasets: [{
+                    label: 'Cumulative Penetrations',
+                    data: cumulativePenetrations,
+                    backgroundColor: 'rgba(255, 0, 0, 0.6)',
+                    borderColor: 'rgba(255, 0, 0, 1)',
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                    },
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+
+        // Relative Frequencies Chart (Histogram)
+        const ctx4 = document.getElementById('relativeFrequenciesChart').getContext('2d');
+        const chart4 = new Chart(ctx4, {
+            type: 'bar',
+            data: {
+                labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
+                datasets: [{
+                    label: 'Relative Frequencies',
+                    data: relativeFrequencies,
+                    backgroundColor: 'rgba(0, 0, 255, 0.6)',
+                    borderColor: 'rgba(0, 0, 255, 1)',
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                    },
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+
+        // Normalized Ratios Chart (Histogram)
+        const ctx5 = document.getElementById('normalizedRatiosChart').getContext('2d');
+        const chart5 = new Chart(ctx5, {
+            type: 'bar',
+            data: {
+                labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
+                datasets: [{
+                    label: 'Normalized Ratios',
+                    data: normalizedRatios,
+                    backgroundColor: 'rgba(0, 255, 0, 0.6)',
+                    borderColor: 'rgba(0, 255, 0, 1)',
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                    },
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+
+        // Enable chart containers to be draggable with jQuery UI
+        $('.chart-container').draggable();
+    </script>
+</body>
+</html>
