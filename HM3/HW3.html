@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Simulazione Punteggio di Sicurezza</title>
+  <title>Security Score Simulation</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -24,7 +24,13 @@
     <canvas id="attackDistribution"></canvas>
   </div>
   <div class="chart-container">
-    <canvas id="penetrationMetrics"></canvas>
+    <canvas id="cumulatedPenetrationsChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="relativeFrequenciesChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="normalizedRatiosChart"></canvas>
   </div>
 
   <script>
@@ -62,7 +68,7 @@
       securityScores.push(systemTrajectory);
     }
 
-    // Graph creation
+    // Security Scores Chart
     const ctx1 = document.getElementById('securityChart').getContext('2d');
     const chart1 = new Chart(ctx1, {
       type: 'line',
@@ -88,11 +94,12 @@
       },
     });
 
+    // Attack Distribution Chart
     const ctx2 = document.getElementById('attackDistribution').getContext('2d');
     const chart2 = new Chart(ctx2, {
       type: 'bar',
       data: {
-        labels: Array.from({ length: N }, (_, i) => `Attacco ${i + 1}`),
+        labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
         datasets: [{
           label: 'Attack Distribution',
           data: attackDistribution,
@@ -112,31 +119,19 @@
       },
     });
 
-    const ctx3 = document.getElementById('penetrationMetrics').getContext('2d');
+    // Cumulative Penetrations Chart (Histogram)
+    const ctx3 = document.getElementById('cumulatedPenetrationsChart').getContext('2d');
     const chart3 = new Chart(ctx3, {
-      type: 'line',
+      type: 'bar',
       data: {
-        labels: Array.from({ length: N }, (_, i) => `Attacco ${i + 1}`),
-        datasets: [
-          {
-            label: 'Cumulated Penetrations (f)',
-            data: cumulativePenetrations,
-            borderColor: 'rgba(255, 0, 0, 1)',
-            fill: false,
-          },
-          {
-            label: 'Relative Frequencies (f/Number of Attacks)',
-            data: relativeFrequencies,
-            borderColor: 'rgba(0, 0, 255, 1)',
-            fill: false,
-          },
-          {
-            label: 'Normalized Ratios (f/√Number of Attacks)',
-            data: normalizedRatios,
-            borderColor: 'rgba(0, 255, 0, 1)',
-            fill: false,
-          },
-        ],
+        labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
+        datasets: [{
+          label: 'Cumulative Penetrations',
+          data: cumulativePenetrations,
+          backgroundColor: 'rgba(255, 0, 0, 0.6)',
+          borderColor: 'rgba(255, 0, 0, 1)',
+          borderWidth: 1,
+        }],
       },
       options: {
         responsive: true,
@@ -151,7 +146,61 @@
       },
     });
 
-    // Abilita il trascinamento dei grafici con jQuery UI
+    // Relative Frequencies Chart (Histogram)
+    const ctx4 = document.getElementById('relativeFrequenciesChart').getContext('2d');
+    const chart4 = new Chart(ctx4, {
+      type: 'bar',
+      data: {
+        labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
+        datasets: [{
+          label: 'Relative Frequencies',
+          data: relativeFrequencies,
+          backgroundColor: 'rgba(0, 0, 255, 0.6)',
+          borderColor: 'rgba(0, 0, 255, 1)',
+          borderWidth: 1,
+        }],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            beginAtZero: true,
+          },
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    // Normalized Ratios Chart (Histogram)
+    const ctx5 = document.getElementById('normalizedRatiosChart').getContext('2d');
+    const chart5 = new Chart(ctx5, {
+      type: 'bar',
+      data: {
+        labels: Array.from({ length: N }, (_, i) => `Attack ${i + 1}`),
+        datasets: [{
+          label: 'Normalized Ratios',
+          data: normalizedRatios,
+          backgroundColor: 'rgba(0, 255, 0, 0.6)',
+          borderColor: 'rgba(0, 255, 0, 1)',
+          borderWidth: 1,
+        }],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            beginAtZero: true,
+          },
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    // Enable chart containers to be draggable with jQuery UI
     $('.chart-container').draggable();
   </script>
 </body>
