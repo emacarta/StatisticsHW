@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV Joint Distribution</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="csvFile" accept=".csv" />
+    <select id="column1">
+        <option value="">Seleziona Colonna 1</option>
+    </select>
+    <select id="column2">
+        <option value="">Seleziona Colonna 2</option>
+    </select>
+    <button id="generateDistribution">Genera Distribuzione Congiunta</button>
+    <div id="output"></div>
+    <div id="error"></div>
+
+    <!-- Aggiungi la libreria PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <script>
+        // Funzione per leggere il file CSV
+        document.getElementById('csvFile').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            Papa.parse(file, {
+                header: true,
+                dynamicTyping: true,
+                complete: function (results) {
+                    // Rimuovi le opzioni precedenti
+                    document.getElementById('column1').innerHTML = '<option value="">Seleziona Colonna 1</option>';
+                    document.getElementById('column2').innerHTML = '<option value="">Seleziona Colonna 2</option>';
+
+                    // Popola i menu a discesa delle colonne con le colonne del CSV
+                    const columns = Object.keys(results.data[0]);
+                    for (const column of columns) {
+                        const option1 = document.createElement('option');
+                        option1.value = column;
+                        option1.textContent = column;
+                        const option2 = document.createElement('option');
+                        option2.value = column;
+                        option2.textContent = column;
+                        document.getElementById('column1').appendChild(option1);
+                        document.getElementById('column2').appendChild(option2);
+                    }
+                },
+                error: function (error) {
+                    alert('Errore durante la lettura del file CSV.');
+                }
+            });
+        });
+
+        // Funzione per generare la distribuzione congiunta
+        document.getElementById('generateDistribution').addEventListener('click', function () {
+            const column1 = document.getElementById('column1').value;
+            const column2 = document.getElementById('column2').value;
+            const output = document.getElementById('output');
+            const errorOutput = document.getElementById('error');
+            output.innerHTML = '';
+            errorOutput.innerHTML = '';
+
+            if (!column1 || !column2) {
+                alert('Seleziona entrambe le colonne.');
+                return;
+            }
+
+            Papa.parse(document.getElementById('csvFile').files[0], {
+                header: true,
+                dynamicTyping: true,
+                complete: function (results) {
+                    const data = results.data;
+                    const jointDistribution = {};
+
+                    // Calcola una semplice distribuzione congiunta
+                    for (const row of data) {
+                        const value1 = row[column1];
+                        const value2 = row[column2];
+
+                        if (!jointDistribution[`${value1}-${value2}`]) {
+                            jointDistribution[`${value1}-${value2}`] = 0;
+                        }
+
+                        jointDistribution[`${value1}-${value2}`]++;
+                    }
+
+                    // Mostra l'output in una tabella
+                    output.innerHTML = 'Distribuzione Congiunta:';
+                    const table = document.createElement('table');
+                    const headerRow = table.insertRow(0);
+                    headerRow.insertCell(0).textContent = 'Valore1 - Valore2';
+                    headerRow.insertCell(1).textContent = 'Conteggio';
+
+                    let rowIdx = 1;
+                    for (const key in jointDistribution) {
+                        const row = table.insertRow(rowIdx);
+                        const cell1 = row.insertCell(0);
+                        const cell2 = row.insertCell(1);
+                        cell1.textContent = key;
+                        cell2.textContent = jointDistribution[key];
+                        rowIdx++;
+                    }
+
+                    output.appendChild(table);
+                },
+                error: function (error) {
+                    errorOutput.innerHTML = `Errore durante la generazione della distribuzione: ${error.message}`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
