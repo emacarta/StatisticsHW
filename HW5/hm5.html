@@ -1,129 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Line Plot</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <label for="lambdaInput">Enter Lambda (attack probability per time interval):</label>
-    <input type="number" id="lambdaInput" step="0.01" value="0.1">
+    <div>
+        <label for="numServers">Number of Servers (M): </label>
+        <input type="number" id="numServers" />
+    </div>
+    <div>
+        <label for="numMonths">Duration in Months (T): </label>
+        <input type="number" id="numMonths" />
+    </div>
+    <div>
+        <label for="lambda">Probability Lambda (0-1): </label>
+        <input type="number" step="0.01" id="lambda" />
+    </div>
+    <button onclick="generateLinePlot()">Generate Plot</button>
 
-    <label for="serverNamesInput">Enter Server Names (comma-separated):</label>
-    <input type="text" id="serverNamesInput" value="Server 1, Server 2, Server 3, Server 4, Server 5">
-
-    <button onclick="generateChart()">Generate Chart</button>
-
-    <canvas id="serverStatusChart"></canvas>
-    <canvas id="attackDistributionChart"></canvas>
+    <div id="plot"></div>
 
     <script>
-        function generateChart() {
-            const lambda = parseFloat(document.getElementById('lambdaInput').value);
-            const serverNames = document.getElementById('serverNamesInput').value.split(',').map(name => name.trim());
-            const N = serverNames.length;
-            const T = 12; // Total number of time intervals (1 year)
+        function generateLinePlot() {
+            const numServers = parseInt(document.getElementById("numServers").value);
+            const numMonths = parseInt(document.getElementById("numMonths").value);
+            const lambda = parseFloat(document.getElementById("lambda").value);
 
-            // Sample data: 5 server objects and their status over time (for 1 year)
-            const timePeriods = Array.from({ length: T }, (_, i) => `Month ${i + 1}`);
+            const serverData = [];
 
-            // Initialize server status data and attack distribution data with zeros
-            const serverStatusData = Array.from({ length: N }, () =>
-                Array.from({ length: T }, () => 0)
-            );
-            const attackDistributionData = Array.from({ length: T }, () => 0);
+            for (let i = 0; i < numServers; i++) {
+                const serverAttacks = [];
+                let attackCount = 0;
 
-            // Simulate attacks and update the data
-            for (let t = 0; t < T; t++) {
-                for (let serverIndex = 0; serverIndex < N; serverIndex++) {
-                    const randomValue = Math.random();
-                    if (randomValue < lambda * T / N) {
-                        // There is an attack in this subinterval
-                        serverStatusData[serverIndex][t]++;
-                        attackDistributionData[t]++;
+                for (let month = 1; month <= numMonths; month++) {
+                    if (Math.random() <= lambda / (numMonths / numServers)) {
+                        attackCount++;
                     }
+                    serverAttacks.push(attackCount);
                 }
+
+                serverData.push({
+                    x: Array.from({ length: numMonths }, (_, i) => i + 1),
+                    y: serverAttacks,
+                    mode: 'lines',
+                    name: `Server ${i + 1}`
+                });
             }
 
-            // Create a line chart for server status
-            const ctx1 = document.getElementById('serverStatusChart').getContext('2d');
-            const serverStatusChart = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: timePeriods,
-                    datasets: serverNames.map((server, index) => ({
-                        label: server,
-                        data: serverStatusData[index],
-                        fill: false,
-                        borderColor: getRandomColor(),
-                        tension: 0.4
-                    }))
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Time (Months)'
-                            }
-                        },
-                        y: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Attacks'
-                            }
-                        }
-                    }
-                }
-            });
+            const layout = {
+                xaxis: { title: 'Months' },
+                yaxis: { title: 'Number of Attacks' },
+                title: 'Server Attack Line Plot Over Time'
+            };
 
-            // Create a bar chart for attack distribution
-            const ctx2 = document.getElementById('attackDistributionChart').getContext('2d');
-            const attackDistributionChart = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: timePeriods,
-                    datasets: [
-                        {
-                            label: 'Attack Distribution',
-                            data: attackDistributionData,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Time (Months)'
-                            }
-                        },
-                        y: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Total Attacks'
-                            }
-                        }
-                    }
-                }
-            });
+            // Generate the histogram plot for attack distribution
+            const attackDistributionData = [{
+                x: serverData.map(server => server.y[numMonths - 1]), // Using the last month for distribution
+                type: 'histogram',
+                name: 'Attack Distribution',
+                opacity: 0.5
+            }];
 
-            // Helper function to generate random colors
-            function getRandomColor() {
-                const letters = '0123456789ABCDEF';
-                let color = '#';
-                for (let i = 0; i < 6; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
-                }
-                return color;
-            }
+            Plotly.newPlot('plot', serverData, layout);
+            Plotly.addTraces('plot', attackDistributionData);
         }
     </script>
 </body>
